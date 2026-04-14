@@ -24,6 +24,13 @@ Avant de lancer la stack, verifier les points suivants :
 - le chemin hote defini dans `PASSBOLT_BASE_PATH` existe
 - le port `8080` est libre sur l'hote
 
+Si tu n'as pas encore recupere le projet :
+
+```bash
+git clone https://github.com/ghost1337john/Passbolt_Smaug_Project.git
+cd Passbolt_Smaug_Project/Installation
+```
+
 ## 1. Preparer le fichier d'environnement
 
 Depuis ce dossier, copier le fichier d'exemple puis l'adapter :

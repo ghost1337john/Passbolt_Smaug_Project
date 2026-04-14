@@ -29,9 +29,11 @@ Le projet fournit :
 
 ## Demarrage rapide
 
-Depuis le dossier `Installation` :
+Cloner le depot puis se placer dans le dossier d'installation :
 
 ```bash
+git clone https://github.com/ghost1337john/Passbolt_Smaug_Project.git
+cd Passbolt_Smaug_Project/Installation
 cp passbolt.env.example passbolt.env
 docker compose --env-file passbolt.env config
 docker compose --env-file passbolt.env up -d
@@ -64,11 +66,12 @@ passbolt_smaug_project/
 Le detail de l'installation est documente dans [Installation/README.md](Installation/README.md).
 
 En resume :
-1. Copier [Installation/passbolt.env.example](Installation/passbolt.env.example) vers [Installation/passbolt.env](Installation/passbolt.env).
-2. Adapter les variables SMTP, base de donnees, chemins de volumes et URL publique.
-3. Valider le compose avec `docker compose --env-file passbolt.env config`.
-4. Demarrer avec `docker compose --env-file passbolt.env up -d`.
-5. Consulter les logs avec `docker compose logs -f passbolt`.
+1. Cloner le depot puis entrer dans [Installation/](Installation).
+2. Copier [Installation/passbolt.env.example](Installation/passbolt.env.example) vers [Installation/passbolt.env](Installation/passbolt.env).
+3. Adapter les variables SMTP, base de donnees, chemins de volumes et URL publique.
+4. Valider le compose avec `docker compose --env-file passbolt.env config`.
+5. Demarrer avec `docker compose --env-file passbolt.env up -d`.
+6. Consulter les logs avec `docker compose logs -f passbolt`.
 
 ## Sauvegarde et restauration
 
