@@ -9,8 +9,10 @@ Ce dossier contient les scripts pour sauvegarder et restaurer une instance Passb
 - Dossier backup : `${PASSBOLT_BASE_PATH}/backup`, cree automatiquement par `backup.sh` si besoin
 - UID MariaDB : `999`
 - Cle GPG backup : variable d'environnement `GPG_KEY`
+- Utilisateur GPG optionnel : variable d'environnement `GPG_EXEC_USER`
 
 Par defaut, si `Installation/passbolt.env` est present, les scripts chargent automatiquement `PASSBOLT_BASE_PATH` depuis ce fichier.
+Par defaut, `backup.sh` chiffre avec le trousseau GPG de l'utilisateur courant. Si le script est lance avec `sudo`, il essaie d'utiliser le trousseau de `SUDO_USER`. Tu peux aussi forcer l'utilisateur a utiliser avec `GPG_EXEC_USER`.
 
 ## Creation de la cle GPG backup
 
@@ -39,10 +41,25 @@ gpg --armor --export <email_ou_keyid> > backup_public.asc
 export GPG_KEY="TON_FINGERPRINT_GPG"
 ```
 
+Si tu lances le script avec `sudo` mais que la cle est dans le trousseau d'un utilisateur precis, tu peux aussi definir :
+
+```bash
+export GPG_EXEC_USER="ton_utilisateur"
+```
+
 Option persistante recommandee (pour cron) :
 
 ```bash
 echo 'GPG_KEY="TON_FINGERPRINT_GPG"' | sudo tee /etc/default/passbolt-backup > /dev/null
+```
+
+Exemple avec utilisateur GPG explicite :
+
+```bash
+sudo tee /etc/default/passbolt-backup > /dev/null <<'EOF'
+GPG_KEY="TON_FINGERPRINT_GPG"
+GPG_EXEC_USER="ton_utilisateur"
+EOF
 ```
 
 ## Fichiers
@@ -59,9 +76,11 @@ chmod +x Sauvegarde/backup.sh Sauvegarde/restore.sh
 ## Backup manuel
 
 Le dossier `${PASSBOLT_BASE_PATH}/backup` n'a pas besoin d'etre cree a la main : le script `backup.sh` le cree automatiquement au lancement.
+Le script verifie aussi que la cle `GPG_KEY` est bien presente dans le trousseau GPG utilise avant de lancer le chiffrement.
 
 ```bash
 export GPG_KEY="TON_FINGERPRINT_GPG"
+export GPG_EXEC_USER="ton_utilisateur"   # optionnel si tu veux forcer un trousseau precis
 sudo ./Sauvegarde/backup.sh
 ```
 
@@ -78,6 +97,7 @@ Avant d'activer le cron :
 - verifier qu'un backup manuel fonctionne
 - utiliser le chemin absolu du projet dans la commande cron
 - enregistrer la variable `GPG_KEY` dans un fichier charge par cron
+- definir `GPG_EXEC_USER` si la cle GPG n'est pas dans le trousseau root
 
 ### 1. Definir la cle GPG pour cron
 
@@ -85,6 +105,15 @@ Creer le fichier `/etc/default/passbolt-backup` :
 
 ```bash
 echo 'GPG_KEY="TON_FINGERPRINT_GPG"' | sudo tee /etc/default/passbolt-backup > /dev/null
+```
+
+Si la cle GPG se trouve dans le trousseau d'un utilisateur specifique, preferer :
+
+```bash
+sudo tee /etc/default/passbolt-backup > /dev/null <<'EOF'
+GPG_KEY="TON_FINGERPRINT_GPG"
+GPG_EXEC_USER="ton_utilisateur"
+EOF
 ```
 
 Verifier ensuite son contenu :
@@ -127,6 +156,7 @@ Points a verifier :
 - le chemin vers `backup.sh` est absolu
 - le fichier `/etc/default/passbolt-backup` existe
 - `GPG_KEY` est correcte
+- `GPG_EXEC_USER` est defini si la cle n'est pas dans le trousseau root
 - le script est executable
 
 Commande utile :
