@@ -4,11 +4,6 @@ networks:
     # external: true
     driver: bridge
 
-  proxy:
-    external: true
-    # name: proxy
-    # driver: bridge
-
 services:
   db:
     container_name: db
@@ -36,11 +31,12 @@ services:
       - ./passbolt.env
     networks:
       - bdd_passbolt
-      - proxy
+    ports:
+      - "8080:80"
     depends_on:
       - db
     environment:
-      APP_FULL_BASE_URL: "https://passbolt.ghosthaven.org"
+      APP_FULL_BASE_URL: $APP_FULL_BASE_URL
       DATASOURCES_DEFAULT_HOST: "db"
       DATASOURCES_DEFAULT_USERNAME: $MYSQL_USER
       DATASOURCES_DEFAULT_PASSWORD: $MYSQL_PASSWORD
@@ -55,7 +51,6 @@ services:
     volumes:
       - ${PASSBOLT_BASE_PATH}/gpg_volume:/etc/passbolt/gpg
       - ${PASSBOLT_BASE_PATH}/jwt_volume:/etc/passbolt/jwt
-      - ${PASSBOLT_BASE_PATH}/nginx/passbolt-ssl.conf:/etc/nginx/snippets/passbolt-ssl.conf:ro
     command:
       [
         "/usr/bin/wait-for.sh",

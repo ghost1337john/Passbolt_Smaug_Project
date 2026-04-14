@@ -12,116 +12,79 @@
 >
 > **Passbolt_Smaug_Project** : là où la sécurité n’est pas un mythe, mais une légende.
 
-> ℹ️ **Statut** : Projet en cours de validation et de tests.
+> ℹ️ **Statut** : projet actuellement en phase de test, avec une stack Docker Compose simple, sans Traefik pour le moment.
 
-Bienvenue dans la stack Passbolt prête à l’emploi ! Ici, tout est pensé pour déployer, sauvegarder et restaurer Passbolt de façon fiable, automatisée et documentée.
+> ℹ️ **Note** : les elements d'integration Traefik seront ajoutes plus tard, une fois la base du projet validee.
 
----
+Ce depot contient une installation Passbolt basee sur Docker Compose et un dossier de scripts de sauvegarde/restauration.
 
-## 🚀 Sommaire
-- [Présentation](#présentation)
-- [Objectifs](#objectifs)
-- [Démarrage rapide](#démarrage-rapide)
-- [Structure du projet](#structure-du-projet)
-- [Installation](#installation)
-- [Sauvegarde & Restauration](#sauvegarde--restauration)
-- [Notes de sécurité](#notes-de-sécurité)
-- [Références](#références)
+## Presentation
 
----
+Le projet fournit :
+- une instance Passbolt CE
+- une base MariaDB dediee
+- des donnees persistantes via bind mounts
+- une exposition directe de Passbolt sur `http://localhost:8080`
+- des scripts de sauvegarde et restauration dans le dossier Sauvegarde
 
-## ✨ Présentation
+## Demarrage rapide
 
-Dans un monde où la sécurité des mots de passe est cruciale, cette stack Docker Passbolt vous permet de :
-
-• Déployer Passbolt en quelques minutes, sans galère de configuration.
-• Sauvegarder toute l’instance (base, clés, volumes) de façon chiffrée.
-• Restaurer en un clin d’œil, avec vérification d’intégrité.
-
-Inspiré par les meilleures pratiques et la clarté de projets comme GreyWizard-Filter.
-
----
-
-## 🎯 Objectifs
-- Déploiement Passbolt ultra-rapide via Docker Compose
-- Configuration centralisée (un seul fichier à éditer)
-- Sauvegarde chiffrée GPG + rotation + checksum
-- Restauration fiable, vérifiée, automatisée
-
----
-
-## ⚡ Démarrage rapide
+Depuis le dossier `Installation` :
 
 ```bash
-# 1. Aller dans le dossier installation
-cd installation
-# 2. Copier et adapter la config
 cp passbolt.env.example passbolt.env
-vim passbolt.env   # ou nano passbolt.env
-# 3. Lancer le déploiement
-./deploy.sh
-# 4. Créer le compte admin (voir README installation)
-# 5. Mettre en place la sauvegarde automatique (voir README Sauvegarde)
+docker compose --env-file passbolt.env config
+docker compose --env-file passbolt.env up -d
 ```
 
----
-
-## 🗂️ Structure du projet
+Passbolt sera ensuite accessible sur :
 
 ```text
-Passbolt/
-├── installation/
-│   ├── deploy.sh              # Déploiement en une commande
-│   ├── install_passbolt.sh    # Script d'installation détaillé
-│   ├── passbolt.env           # Configuration réelle (à adapter)
-│   ├── passbolt.env.example   # Modèle de config
-│   └── README.md              # Guide d'installation
-├── Sauvegarde/
-│   ├── backup.sh              # Sauvegarde chiffrée GPG
-│   ├── restore.sh             # Restauration + vérification
-│   └── README.md              # Guide backup/restore
-├── CHANGELOG.md
-└── README.md                  # (ce fichier)
+http://localhost:8080
 ```
 
----
+## Structure du projet
 
-## 🏗️ Installation
+```text
+passbolt_smaug_project/
+├── Installation/
+│   ├── docker-compose.yml
+│   ├── passbolt.env
+│   ├── passbolt.env.example
+│   └── README.md
+├── Sauvegarde/
+│   ├── backup.sh
+│   ├── restore.sh
+│   └── README.md
+└── README.md
+```
 
-Tout est expliqué dans [installation/README.md](installation/README.md), mais en résumé :
+## Installation
 
-1. Adapter `installation/passbolt.env` (domaine, SMTP, TLS…)
-2. Lancer `./deploy.sh` pour tout automatiser
-3. Créer le compte admin Passbolt
+Le detail de l'installation est documente dans [Installation/README.md](Installation/README.md).
 
-> 💡 **Astuce** : Le script injecte automatiquement la config SMTP si renseignée dans `passbolt.env`.
+En resume :
+1. Copier [Installation/passbolt.env.example](Installation/passbolt.env.example) vers [Installation/passbolt.env](Installation/passbolt.env).
+2. Adapter les variables SMTP, base de donnees, chemins de volumes et URL publique.
+3. Valider le compose avec `docker compose --env-file passbolt.env config`.
+4. Demarrer avec `docker compose --env-file passbolt.env up -d`.
+5. Consulter les logs avec `docker compose logs -f passbolt`.
 
----
+## Sauvegarde et restauration
 
-## 💾 Sauvegarde & Restauration
+Le dossier [Sauvegarde](Sauvegarde) contient :
+- [Sauvegarde/backup.sh](Sauvegarde/backup.sh) pour sauvegarder l'instance
+- [Sauvegarde/restore.sh](Sauvegarde/restore.sh) pour restaurer une sauvegarde
+- [Sauvegarde/README.md](Sauvegarde/README.md) pour la procedure detaillee
 
-Scripts dédiés dans le dossier [Sauvegarde](Sauvegarde) :
+## Notes de securite
 
-- `backup.sh` : Sauvegarde complète chiffrée (base, clés, volumes, configs)
-- `restore.sh` : Restauration automatisée, vérification SHA256 si présente
-- Voir [Sauvegarde/README.md](Sauvegarde/README.md) pour la mise en place du cron et la procédure détaillée
+- Ne versionnez jamais de mots de passe reels dans [Installation/passbolt.env](Installation/passbolt.env).
+- Limitez l'exposition reseau du port `8080` si l'instance n'est pas uniquement locale.
+- Conservez les sauvegardes et les cles sensibles hors du serveur principal quand c'est possible.
+- Testez la restauration regulierement avant de considerer la sauvegarde comme fiable.
 
----
+## References
 
-## 🔐 Notes de sécurité
-
-- Ne versionnez jamais de mots de passe réels dans les fichiers `.env`
-- Utilisez un certificat TLS valide (ou reverse proxy)
-- Conservez la clé privée GPG de backup hors du serveur
-- Testez régulièrement la restauration sur un environnement de test
-
----
-
-## 📚 Références
-
-- [Tutoriel IT-Connect (base technique)](https://www.it-connect.fr/tuto-passbolt-installation-avec-docker/)
+- [Tutoriel IT-Connect](https://www.it-connect.fr/tuto-passbolt-installation-avec-docker/)
 - [Documentation Passbolt](https://www.passbolt.com/docs/)
-
----
-
-> 🛠️ Projet adaptable, évolutif, et en amélioration continue. Pour toute suggestion, ouvrez une issue ou contactez le mainteneur.
