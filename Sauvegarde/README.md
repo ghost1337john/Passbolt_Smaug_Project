@@ -6,7 +6,7 @@ Ce dossier contient les scripts pour sauvegarder et restaurer une instance Passb
 - Conteneur application : `passbolt`
 - Conteneur base : `db`
 - Dossier principal : `PASSBOLT_BASE_PATH` lu depuis `Installation/passbolt.env`
-- Dossier backup : `${PASSBOLT_BASE_PATH}/backup`
+- Dossier backup : `${PASSBOLT_BASE_PATH}/backup`, cree automatiquement par `backup.sh` si besoin
 - UID MariaDB : `999`
 - Cle GPG backup : variable d'environnement `GPG_KEY`
 
@@ -58,6 +58,8 @@ chmod +x Sauvegarde/backup.sh Sauvegarde/restore.sh
 
 ## Backup manuel
 
+Le dossier `${PASSBOLT_BASE_PATH}/backup` n'a pas besoin d'etre cree a la main : le script `backup.sh` le cree automatiquement au lancement.
+
 ```bash
 export GPG_KEY="TON_FINGERPRINT_GPG"
 sudo ./Sauvegarde/backup.sh
@@ -70,11 +72,75 @@ Backup termine : ${PASSBOLT_BASE_PATH}/backup/passbolt_backup_YYYY-MM-DD_HH-MM-S
 Checksum : ${PASSBOLT_BASE_PATH}/backup/passbolt_backup_YYYY-MM-DD_HH-MM-SS.tar.gz.gpg.sha256
 ```
 
-## Backup automatique (cron a minuit)
-Ajouter dans `/etc/crontab` :
+## Backup automatique avec cron
+
+Avant d'activer le cron :
+- verifier qu'un backup manuel fonctionne
+- utiliser le chemin absolu du projet dans la commande cron
+- enregistrer la variable `GPG_KEY` dans un fichier charge par cron
+
+### 1. Definir la cle GPG pour cron
+
+Creer le fichier `/etc/default/passbolt-backup` :
+
+```bash
+echo 'GPG_KEY="TON_FINGERPRINT_GPG"' | sudo tee /etc/default/passbolt-backup > /dev/null
+```
+
+Verifier ensuite son contenu :
+
+```bash
+sudo cat /etc/default/passbolt-backup
+```
+
+### 2. Identifier le chemin absolu du projet
+
+Exemple :
+
+```text
+/opt/Passbolt_Smaug_Project
+```
+
+Dans ce cas, le script de backup sera :
+
+```text
+/opt/Passbolt_Smaug_Project/Sauvegarde/backup.sh
+```
+
+### 3. Ajouter la tache cron
+
+Ouvrir `/etc/crontab` :
+
+```bash
+sudo nano /etc/crontab
+```
+
+Ajouter par exemple une sauvegarde tous les jours a minuit :
 
 ```cron
-0 0 * * * root . /etc/default/passbolt-backup; /chemin/vers/le/projet/Sauvegarde/backup.sh >> /var/log/passbolt-backup.log 2>&1
+0 0 * * * root . /etc/default/passbolt-backup; /opt/Passbolt_Smaug_Project/Sauvegarde/backup.sh >> /var/log/passbolt-backup.log 2>&1
+```
+
+### 4. Verifier que la tache est correcte
+
+Points a verifier :
+- le chemin vers `backup.sh` est absolu
+- le fichier `/etc/default/passbolt-backup` existe
+- `GPG_KEY` est correcte
+- le script est executable
+
+Commande utile :
+
+```bash
+ls -l /opt/Passbolt_Smaug_Project/Sauvegarde/backup.sh
+```
+
+### 5. Surveiller l'execution
+
+Apres le premier lancement cron, verifier le log :
+
+```bash
+sudo tail -n 50 /var/log/passbolt-backup.log
 ```
 
 ## Restauration
