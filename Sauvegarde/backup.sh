@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+# Configuration manuelle (optionnel)
+# Renseigne ici la cle GPG et l'utilisateur GPG si tu ne veux pas utiliser les variables exportees.
+MANUAL_GPG_KEY=""
+MANUAL_GPG_EXEC_USER=""
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${PASSBOLT_ENV_FILE:-$SCRIPT_DIR/../Installation/passbolt.env}"
 
@@ -17,8 +22,8 @@ PASSBOLT_CONTAINER="passbolt"
 DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 ARCHIVE="$BACKUP_DIR/passbolt_backup_$DATE.tar.gz"
 MAX_BACKUPS=10
-GPG_KEY="${GPG_KEY:-}"
-GPG_EXEC_USER="${GPG_EXEC_USER:-${SUDO_USER:-}}"
+GPG_KEY="${MANUAL_GPG_KEY:-${GPG_KEY:-}}"
+GPG_EXEC_USER="${MANUAL_GPG_EXEC_USER:-${GPG_EXEC_USER:-${SUDO_USER:-}}}"
 
 if [ -n "$GPG_EXEC_USER" ] && [ "$EUID" -eq 0 ]; then
   GPG_EXEC_HOME=$(getent passwd "$GPG_EXEC_USER" | cut -d: -f6)
@@ -33,7 +38,7 @@ fi
 
 if [ -z "$GPG_KEY" ]; then
   echo "Erreur: variable GPG_KEY non definie."
-  echo "Exemple: export GPG_KEY=TON_FINGERPRINT_GPG"
+  echo "Definis MANUAL_GPG_KEY en haut du script ou exporte GPG_KEY avant execution."
   exit 1
 fi
 
@@ -56,7 +61,8 @@ MYSQL_PASSWORD=$(sudo docker exec "$DB_CONTAINER" printenv MYSQL_PASSWORD)
 MYSQL_DATABASE=$(sudo docker exec "$DB_CONTAINER" printenv MYSQL_DATABASE)
 
 echo "[2/7] Dump MariaDB..."
-sudo sh -c "docker exec $DB_CONTAINER bash -c \"mariadb-dump -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE\" > $BACKUP_DIR/db.sql"
+sudo docker exec -e MYSQL_PWD="$MYSQL_PASSWORD" "$DB_CONTAINER" \
+  mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE" > "$BACKUP_DIR/db.sql"
 
 echo "[3/7] Sauvegarde des cles GPG..."
 sudo docker cp "$PASSBOLT_CONTAINER":/etc/passbolt/gpg/serverkey_private.asc "$BACKUP_DIR/serverkey_private.asc"

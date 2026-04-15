@@ -8,11 +8,11 @@ Ce dossier contient les scripts pour sauvegarder et restaurer une instance Passb
 - Dossier principal : `PASSBOLT_BASE_PATH` lu depuis `Installation/passbolt.env`
 - Dossier backup : `${PASSBOLT_BASE_PATH}/backup`, cree automatiquement par `backup.sh` si besoin
 - UID MariaDB : `999`
-- Cle GPG backup : variable d'environnement `GPG_KEY`
-- Utilisateur GPG optionnel : variable d'environnement `GPG_EXEC_USER`
+- Cle GPG backup : configurable dans `backup.sh` via `MANUAL_GPG_KEY` ou par variable d'environnement `GPG_KEY`
+- Utilisateur GPG optionnel : configurable dans `backup.sh` et `restore.sh` via `MANUAL_GPG_EXEC_USER` ou par variable d'environnement `GPG_EXEC_USER`
 
 Par defaut, si `Installation/passbolt.env` est present, les scripts chargent automatiquement `PASSBOLT_BASE_PATH` depuis ce fichier.
-Par defaut, `backup.sh` chiffre avec le trousseau GPG de l'utilisateur courant. Si le script est lance avec `sudo`, il essaie d'utiliser le trousseau de `SUDO_USER`. Tu peux aussi forcer l'utilisateur a utiliser avec `GPG_EXEC_USER`.
+Par defaut, `backup.sh` chiffre et `restore.sh` dechiffre avec le trousseau GPG de l'utilisateur courant. Si le script est lance avec `sudo`, il essaie d'utiliser le trousseau de `SUDO_USER`. Tu peux aussi forcer l'utilisateur a utiliser avec `MANUAL_GPG_EXEC_USER` dans le script ou avec `GPG_EXEC_USER`.
 
 ## Creation de la cle GPG backup
 
@@ -39,6 +39,13 @@ gpg --armor --export <email_ou_keyid> > backup_public.asc
 
 ```bash
 export GPG_KEY="TON_FINGERPRINT_GPG"
+```
+
+Ou directement dans `Sauvegarde/backup.sh` :
+
+```bash
+MANUAL_GPG_KEY="TON_FINGERPRINT_GPG"
+MANUAL_GPG_EXEC_USER="ton_utilisateur"
 ```
 
 Si tu lances le script avec `sudo` mais que la cle est dans le trousseau d'un utilisateur precis, tu peux aussi definir :
@@ -77,6 +84,21 @@ chmod +x Sauvegarde/backup.sh Sauvegarde/restore.sh
 
 Le dossier `${PASSBOLT_BASE_PATH}/backup` n'a pas besoin d'etre cree a la main : le script `backup.sh` le cree automatiquement au lancement.
 Le script verifie aussi que la cle `GPG_KEY` est bien presente dans le trousseau GPG utilise avant de lancer le chiffrement.
+
+Option 1, configuration directe dans `Sauvegarde/backup.sh` :
+
+```bash
+MANUAL_GPG_KEY="TON_FINGERPRINT_GPG"
+MANUAL_GPG_EXEC_USER="ton_utilisateur"
+```
+
+Puis :
+
+```bash
+sudo ./Sauvegarde/backup.sh
+```
+
+Option 2, variables d'environnement :
 
 ```bash
 export GPG_KEY="TON_FINGERPRINT_GPG"
@@ -175,13 +197,29 @@ sudo tail -n 50 /var/log/passbolt-backup.log
 
 ## Restauration
 
+Option 1, configuration directe dans `Sauvegarde/restore.sh` :
+
 ```bash
+MANUAL_GPG_EXEC_USER="ton_utilisateur"
+```
+
+Puis :
+
+```bash
+sudo ./Sauvegarde/restore.sh ${PASSBOLT_BASE_PATH}/backup/passbolt_backup_YYYY-MM-DD_HH-MM-SS.tar.gz.gpg
+```
+
+Option 2, variable d'environnement :
+
+```bash
+export GPG_EXEC_USER="ton_utilisateur"   # optionnel si tu veux forcer un trousseau precis
 sudo ./Sauvegarde/restore.sh ${PASSBOLT_BASE_PATH}/backup/passbolt_backup_YYYY-MM-DD_HH-MM-SS.tar.gz.gpg
 ```
 
 Le script de restauration :
 - verifie automatiquement le checksum SHA256 si le fichier `.sha256` est present
 - nettoie automatiquement son repertoire temporaire apres execution
+- dechiffre avec le trousseau GPG de l'utilisateur configure
 - restaure la base a partir du dump SQL
 - restaure `gpg_volume` et `jwt_volume`
 - recree les repertoires cibles si necessaire
