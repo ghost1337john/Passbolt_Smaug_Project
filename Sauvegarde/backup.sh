@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Configuration manuelle (optionnel)
-# Renseigne ici la cle GPG et l'utilisateur GPG si tu ne veux pas utiliser les variables exportees.
+# Configuration manuelle GPG
+# Renseigne ici la cle GPG et l'utilisateur GPG utilises par le script.
 MANUAL_GPG_KEY=""
 MANUAL_GPG_EXEC_USER=""
 
@@ -38,7 +38,7 @@ fi
 
 if [ -z "$GPG_KEY" ]; then
   echo "Erreur: variable GPG_KEY non definie."
-  echo "Definis MANUAL_GPG_KEY en haut du script ou exporte GPG_KEY avant execution."
+  echo "Definis MANUAL_GPG_KEY en haut du script avant execution."
   exit 1
 fi
 

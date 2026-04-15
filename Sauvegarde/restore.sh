@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Configuration manuelle (optionnel)
-# Renseigne ici l'utilisateur GPG si tu ne veux pas utiliser la variable exportee GPG_EXEC_USER.
+# Configuration manuelle GPG
+# Renseigne ici l'utilisateur GPG utilise pour le dechiffrement.
 MANUAL_GPG_EXEC_USER=""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

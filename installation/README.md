@@ -70,10 +70,20 @@ EMAIL_TRANSPORT_DEFAULT_TLS=tls
 
 Le compose utilise des bind mounts. Il faut donc creer les dossiers sur l'hote :
 
+Si tu veux reutiliser directement la valeur de `PASSBOLT_BASE_PATH` definie dans `passbolt.env`, charge d'abord le fichier dans ton shell :
+
 ```bash
-mkdir -p /app/passbolt/database_volume
-mkdir -p /app/passbolt/gpg_volume
-mkdir -p /app/passbolt/jwt_volume
+set -a
+. ./passbolt.env
+set +a
+```
+
+Puis cree les dossiers :
+
+```bash
+sudo mkdir -p "$PASSBOLT_BASE_PATH/database_volume"
+sudo mkdir -p "$PASSBOLT_BASE_PATH/gpg_volume"
+sudo mkdir -p "$PASSBOLT_BASE_PATH/jwt_volume"
 ```
 
 Si tu utilises un autre chemin, adapte `PASSBOLT_BASE_PATH` en consequence.
@@ -81,8 +91,8 @@ Si tu utilises un autre chemin, adapte `PASSBOLT_BASE_PATH` en consequence.
 Avant le premier demarrage, ajuster aussi les permissions sur les dossiers utilises par Passbolt, sinon l'application ne pourra pas ecrire dedans :
 
 ```bash
-sudo chown www-data:www-data ${PASSBOLT_BASE_PATH}/gpg_volume
-sudo chown www-data:www-data ${PASSBOLT_BASE_PATH}/jwt_volume
+sudo chown www-data:www-data "$PASSBOLT_BASE_PATH/gpg_volume"
+sudo chown www-data:www-data "$PASSBOLT_BASE_PATH/jwt_volume"
 ```
 
 ## 3. Adapter le domaine dans le compose
