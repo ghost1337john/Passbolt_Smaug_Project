@@ -5,6 +5,9 @@ set -euo pipefail
 # Renseigne ici la cle GPG et l'utilisateur GPG utilises par le script.
 MANUAL_GPG_KEY=""
 MANUAL_GPG_EXEC_USER=""
+# Renseigne ici un dossier de backup fixe (recommande pour cron).
+# Exemple : MANUAL_BACKUP_DIR="/mnt/backup/passbolt"
+MANUAL_BACKUP_DIR=""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${PASSBOLT_ENV_FILE:-$SCRIPT_DIR/../Installation/passbolt.env}"
@@ -16,7 +19,7 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 PASSBOLT_BASE_PATH="${PASSBOLT_BASE_PATH:-/app/passbolt}"
-BACKUP_DIR="${BACKUP_DIR:-$PASSBOLT_BASE_PATH/backup}"
+BACKUP_DIR="${MANUAL_BACKUP_DIR:-${BACKUP_DIR:-$PASSBOLT_BASE_PATH/backup}}"
 DB_CONTAINER="db"
 PASSBOLT_CONTAINER="passbolt"
 DATE=$(date +"%Y-%m-%d_%H-%M-%S")

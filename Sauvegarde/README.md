@@ -65,6 +65,7 @@ Configuration directe dans `Sauvegarde/backup.sh` :
 ```bash
 MANUAL_GPG_KEY="TON_FINGERPRINT_GPG"
 MANUAL_GPG_EXEC_USER="ton_utilisateur"
+MANUAL_BACKUP_DIR="/mnt/backup/passbolt"
 ```
 
 Puis :
@@ -73,12 +74,16 @@ Puis :
 sudo ./Sauvegarde/backup.sh
 ```
 
+`MANUAL_BACKUP_DIR` est recommande pour un usage via cron : le repertoire de destination reste fixe d'une execution a l'autre.
+
 Sortie attendue :
 
 ```text
 Backup termine : ${PASSBOLT_BASE_PATH}/backup/passbolt_backup_YYYY-MM-DD_HH-MM-SS.tar.gz.gpg
 Checksum : ${PASSBOLT_BASE_PATH}/backup/passbolt_backup_YYYY-MM-DD_HH-MM-SS.tar.gz.gpg.sha256
 ```
+
+Si `MANUAL_BACKUP_DIR` est defini, le chemin affiche dans la sortie correspond a ce dossier.
 
 ## Verifier une sauvegarde
 
