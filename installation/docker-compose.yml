@@ -18,6 +18,12 @@ services:
       MYSQL_DATABASE: "passbolt"
       MYSQL_USER: $MYSQL_USER
       MYSQL_PASSWORD: $MYSQL_PASSWORD
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     volumes:
       - ${PASSBOLT_BASE_PATH}/database_volume:/var/lib/mysql
      
@@ -34,7 +40,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       APP_FULL_BASE_URL: $APP_FULL_BASE_URL
       DATASOURCES_DEFAULT_HOST: "db"
@@ -48,6 +55,12 @@ services:
       EMAIL_TRANSPORT_DEFAULT_USERNAME: $EMAIL_TRANSPORT_DEFAULT_USERNAME
       EMAIL_TRANSPORT_DEFAULT_PASSWORD: $EMAIL_TRANSPORT_DEFAULT_PASSWORD
       EMAIL_TRANSPORT_DEFAULT_TLS: $EMAIL_TRANSPORT_DEFAULT_TLS
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/healthcheck/status.json >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     volumes:
       - ${PASSBOLT_BASE_PATH}/gpg_volume:/etc/passbolt/gpg
       - ${PASSBOLT_BASE_PATH}/jwt_volume:/etc/passbolt/jwt
